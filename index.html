@@ -330,7 +330,7 @@
   </div>
 </main>
 
-<button class="b98 sonido" id="sonido">🔇 Activar sirena</button>
+<button class="b98 sonido" id="sonido">🔊 Apagar sirena</button>
 
 <div id="revelacion">
   <div class="win">
@@ -447,9 +447,9 @@
   }
 
   // ---------- Sirena (WebAudio, se activa con clic) ----------
-  let audioCtx = null, sonidoOn = false, sirenaTimer = null;
+  let audioCtx = null, sonidoOn = true, sirenaTimer = null;
   function beep(freq = 880, dur = 0.18) {
-    if (!sonidoOn || !audioCtx) return;
+    if (!sonidoOn || !audioCtx || audioCtx.state !== "running") return;
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = "square";
@@ -460,15 +460,35 @@
     o.stop(audioCtx.currentTime + dur);
   }
   const btnSonido = document.getElementById("sonido");
-  btnSonido.addEventListener("click", () => {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    sonidoOn = !sonidoOn;
+  function actualizarBoton() {
     btnSonido.textContent = sonidoOn ? "🔊 Apagar sirena" : "🔇 Activar sirena";
+  }
+  function arrancarSirena() {
     clearInterval(sirenaTimer);
-    if (sonidoOn) {
-      let alto = true;
-      sirenaTimer = setInterval(() => { beep(alto ? 960 : 640, 0.3); alto = !alto; }, 350);
-    }
+    if (!sonidoOn) return;
+    let alto = true;
+    sirenaTimer = setInterval(() => { beep(alto ? 960 : 640, 0.3); alto = !alto; }, 350);
+  }
+
+  // Se intenta sonar desde el inicio. Los navegadores suelen bloquear el audio
+  // hasta que la persona hace clic o toca una tecla: en ese caso la sirena
+  // queda "armada" y arranca con la primera interacción en cualquier parte.
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  arrancarSirena();
+  actualizarBoton();
+
+  const destrabar = () => {
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    ["pointerdown", "keydown", "touchstart"].forEach(ev =>
+      document.removeEventListener(ev, destrabar, true));
+  };
+  ["pointerdown", "keydown", "touchstart"].forEach(ev =>
+    document.addEventListener(ev, destrabar, true));
+
+  btnSonido.addEventListener("click", () => {
+    sonidoOn = !sonidoOn;
+    actualizarBoton();
+    arrancarSirena();
   });
 
   // ---------- Popups ----------
