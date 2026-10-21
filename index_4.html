@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>⚠ ALERTA DE RED CRÍTICA ⚠</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚨</text></svg>">
+<style>
+  :root {
+    --desk: #008080;
+    --win: #c0c0c0;
+    --hi: #ffffff;
+    --shadow: #808080;
+    --dark: #000000;
+    --title1: #000080;
+    --title2: #1084d0;
+    --red: #ff0000;
+    --yellow: #ffff00;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--desk);
+    font-family: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;
+    font-size: 13px;
+    color: var(--dark);
+  }
+
+  /* Banner gritón */
+  .banner {
+    flex: none;
+    background: var(--red);
+    color: var(--yellow);
+    font-family: Impact, "Arial Black", "Haettenschweiler", sans-serif;
+    font-size: clamp(24px, 6vh, 60px);
+    line-height: 1.1;
+    text-align: center;
+    padding: 4px 8px;
+    letter-spacing: 1px;
+    text-shadow: 3px 3px 0 #000;
+    animation: blink 0.6s steps(2) infinite;
+    border-bottom: 3px solid var(--yellow);
+  }
+  @keyframes blink { 50% { background: var(--yellow); color: var(--red); } }
+
+  .ticker {
+    flex: none;
+    background: #000;
+    color: #0f0;
+    font-family: "Courier New", monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 3px 0;
+    font-size: 13px;
+  }
+  .ticker span { display: inline-block; padding-left: 100%; animation: scroll 28s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-100%); } }
+
+  /* Ventanas estilo Windows 98 */
+  .win {
+    background: var(--win);
+    border: 2px solid;
+    border-color: var(--hi) var(--dark) var(--dark) var(--hi);
+    box-shadow: inset -1px -1px var(--shadow), inset 1px 1px #dfdfdf;
+    padding: 3px;
+  }
+  .titlebar {
+    background: linear-gradient(90deg, var(--title1), var(--title2));
+    color: #fff;
+    font-weight: bold;
+    padding: 3px 4px 3px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .titlebar .x {
+    background: var(--win);
+    color: #000;
+    border: 2px solid;
+    border-color: var(--hi) var(--dark) var(--dark) var(--hi);
+    width: 22px; height: 20px;
+    font-weight: bold; font-size: 12px; line-height: 1;
+    cursor: pointer; padding: 0;
+  }
+
+  /* Contenido: ocupa todo el alto disponible */
+  main {
+    flex: 1;
+    min-height: 0;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+  }
+  .principal {
+    width: min(980px, 100%);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .principal > .contenido {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 12px;
+    padding: 10px;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 8px;
+  }
+
+  .alerta { display: flex; gap: 12px; align-items: flex-start; }
+  .icono {
+    flex: none;
+    width: 52px; height: 46px;
+    position: relative;
+  }
+  .icono::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--yellow);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+  .icono::after {
+    content: "!";
+    position: absolute; left: 0; right: 0; top: 11px;
+    text-align: center;
+    font: bold 28px/1 "Arial Black", sans-serif;
+  }
+  .alerta h1 { font-size: 18px; margin: 0 0 4px; color: #a00000; }
+  .alerta p { margin: 0 0 4px; line-height: 1.35; }
+
+  .tabla-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    background: #fff;
+    border: 2px solid;
+    border-color: var(--shadow) var(--hi) var(--hi) var(--shadow);
+  }
+  table.datos { width: 100%; border-collapse: collapse; }
+  table.datos td {
+    padding: 3px 7px;
+    border-bottom: 1px dotted #aaa;
+    vertical-align: top;
+  }
+  table.datos td:first-child { font-weight: bold; width: 48%; }
+  table.datos tr.flash td { background: #ffff99; }
+
+  /* Botones apilados, con la flecha a la izquierda del primero */
+  .botones {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-left: 70px;
+  }
+  button.b98 {
+    background: var(--win);
+    border: 2px solid;
+    border-color: var(--hi) var(--dark) var(--dark) var(--hi);
+    box-shadow: inset -1px -1px var(--shadow), inset 1px 1px #dfdfdf;
+    padding: 6px 14px;
+    font: inherit;
+    cursor: pointer;
+    min-width: 120px;
+  }
+  .botones button.b98 { width: 210px; }
+  button.b98:active { border-color: var(--dark) var(--hi) var(--hi) var(--dark); }
+  button.b98:focus-visible { outline: 2px dotted #000; outline-offset: -6px; }
+  button.b98:disabled { color: var(--shadow); cursor: wait; }
+  #ignorar { transition: transform 0.15s; }
+
+  .con-flecha { position: relative; display: inline-block; }
+  .flecha {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    margin-right: 6px;
+    display: flex; flex-direction: column; align-items: center;
+    pointer-events: none;
+    animation: rebote 0.5s ease-in-out infinite alternate;
+  }
+  .flecha span {
+    font: 18px Impact, "Arial Black", sans-serif;
+    color: var(--red);
+    text-shadow: 2px 2px 0 #000;
+    transform: rotate(-10deg);
+    white-space: nowrap;
+    margin-bottom: -2px;
+  }
+  @keyframes rebote {
+    from { transform: translate(-10px, -60%); }
+    to { transform: translate(-2px, -60%); }
+  }
+
+  .barra {
+    height: 20px;
+    border: 2px solid;
+    border-color: var(--shadow) var(--hi) var(--hi) var(--shadow);
+    background: #fff;
+    padding: 2px;
+    visibility: hidden;
+  }
+  .barra div {
+    height: 100%;
+    width: 0;
+    background: repeating-linear-gradient(90deg, var(--title1) 0 12px, transparent 12px 15px);
+  }
+  .estado { min-height: 1.3em; font-style: italic; margin-top: -4px; }
+
+  .log {
+    flex: 1;
+    min-height: 80px;
+    background: #000;
+    color: #0f0;
+    font: 12px/1.45 "Courier New", monospace;
+    overflow-y: auto;
+    padding: 6px 8px;
+    border: 2px solid;
+    border-color: var(--shadow) var(--hi) var(--hi) var(--shadow);
+  }
+  .log .err { color: #ff5555; }
+  .log .warn { color: var(--yellow); }
+
+  /* Popups: chicos, se amontonan entre sí sin tapar todo */
+  .popup {
+    position: fixed;
+    width: 230px;
+    z-index: 10;
+    font-size: 12px;
+    opacity: 0.93;
+    animation: pop 0.12s ease-out;
+  }
+  @keyframes pop { from { transform: scale(0.6); } }
+  .popup .titlebar { font-size: 11px; padding: 2px 3px 2px 5px; }
+  .popup .titlebar .x { width: 18px; height: 16px; font-size: 10px; }
+  .popup .cuerpo { display: flex; gap: 8px; align-items: center; padding: 8px; }
+  .popup .icono { width: 26px; height: 23px; }
+  .popup .icono::after { font-size: 14px; top: 7px; }
+  .popup .acciones { text-align: center; padding-bottom: 6px; }
+  .popup button.b98 { min-width: 70px; padding: 3px 10px; }
+
+  /* Revelación final */
+  #revelacion {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  #revelacion .win { max-width: 440px; width: 100%; }
+  #revelacion .cuerpo { padding: 14px; text-align: center; font-size: 16px; line-height: 1.5; }
+  #revelacion .grande { font-size: 56px; margin: 6px 0; }
+
+  .sonido {
+    position: fixed; right: 10px; bottom: 10px; z-index: 50;
+    min-width: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .banner, .ticker span, .popup, .flecha { animation: none; }
+  }
+
+  /* Pantallas chicas: una sola columna y se permite scroll */
+  @media (max-width: 720px), (max-height: 520px) {
+    body { height: auto; min-height: 100vh; overflow: auto; }
+    main { flex: none; }
+    .principal { height: auto; }
+    .principal > .contenido { grid-template-columns: 1fr; }
+    .tabla-wrap { flex: none; max-height: none; }
+    .log { flex: none; height: 160px; }
+    .popup { width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">⚠ PELIGRO: IP DUPLICADA ⚠</div>
+<div class="ticker"><span id="ticker"></span></div>
+
+<main>
+  <div class="win principal">
+    <div class="titlebar">
+      <span>Centro de Seguridad de Red™ v0.0.0.1 (no oficial)</span>
+      <button class="x" id="cerrarPrincipal" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="contenido">
+      <div class="col">
+        <div class="alerta">
+          <div class="icono" aria-hidden="true"></div>
+          <div>
+            <h1 id="titulo">¡ATENCIÓN USUARIO!</h1>
+            <p>Se detectó que su dirección IP está siendo usada en <b>DOS (2) lugares al mismo tiempo</b>. Esto es físicamente imposible y aun así está pasando.</p>
+            <p>No apague la computadora. No la prenda tampoco. No toque nada. Bueno, toque algo.</p>
+          </div>
+        </div>
+        <div class="tabla-wrap"><table class="datos" id="datos"></table></div>
+      </div>
+
+      <div class="col">
+        <div class="botones">
+          <span class="con-flecha">
+            <span class="flecha" aria-hidden="true">
+              <span>¡ACÁ!</span>
+              <svg viewBox="0 0 50 40" width="46" height="36"><path d="M0 14h28V2l22 18-22 18V26H0z" fill="#ff0000" stroke="#000" stroke-width="2"/></svg>
+            </span>
+            <button class="b98" id="desduplicar">Desduplicar IP</button>
+          </span>
+          <button class="b98" id="soporte">Llamar a Sistemas</button>
+          <button class="b98" id="ignorar">Ignorar</button>
+        </div>
+
+        <div class="barra" id="barra"><div id="progreso"></div></div>
+        <div class="estado" id="estado"></div>
+
+        <div class="log" id="log" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<button class="b98 sonido" id="sonido">🔇 Activar sirena</button>
+
+<div id="revelacion">
+  <div class="win">
+    <div class="titlebar"><span>Diagnóstico final</span></div>
+    <div class="cuerpo">
+      <div class="grande">🥐</div>
+      <p><b>Solución encontrada.</b></p>
+      <p id="textoFinal"></p>
+      <p style="margin-top:14px">(Es una broma. Tu IP está perfecta. 😄)</p>
+      <button class="b98" onclick="location.reload()">Volver a empezar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- Personalización: ?nombre=Juan ----------
+  const params = new URLSearchParams(location.search);
+  const nombre = (params.get("nombre") || "").trim().slice(0, 30);
+  if (nombre) {
+    document.getElementById("titulo").textContent = `¡ATENCIÓN ${nombre.toUpperCase()}!`;
+    document.title = `⚠ ${nombre}: IP DUPLICADA ⚠`;
+  }
+  const quien = nombre || "el usuario";
+
+  const r = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+  const pick = arr => arr[r(0, arr.length - 1)];
+
+  // ---------- Datos sin sentido ----------
+  const gemelas = [
+    "Una tostadora en Quilmes", "La heladera del 3er piso", "Un kiosco en Tandil",
+    "La impresora que nunca anda", "Un lavarropas en Córdoba", "El microondas de la cocina",
+    "Un satélite ruso jubilado", "La pava eléctrica de RRHH", "Un Nokia 1100 en Mendoza",
+    "El dispenser de agua", "Un router de 2004 en Bahía Blanca", "La calculadora de Tesorería"
+  ];
+  const dns = [
+    "Don Norberto Sánchez", "8.8.8.8.8.8", "El primo de Sistemas",
+    "dns.google.com.ar.mx", "Preguntale a Google", "localhost (lejos)"
+  ];
+  const protocolos = ["TCP/IPA", "UDP (Usted Debe Preocuparse)", "HTTP/0.5", "FTP (Fue Tu Problema)", "IPv4,5", "Paloma mensajera"];
+  const mascaras = ["255.255.255.🍕", "255.255.mate.0", "255.255.255.256", "0.0.0.¿?", "255.255.medialuna.0"];
+  const gateways = ["Puerta 3 de Retiro", "La ventana del baño", "Un portón eléctrico", "El ascensor (fuera de servicio)"];
+  const riesgos = ["ALTO", "ALTÍSIMO", "MUY ALTÍSIMO", "NIVEL DIOS", "CRÍTICO++", "ROJO FUERTE"];
+
+  const hexBurlon = () => pick(["CA:FE", "BE:BE", "DE:AD", "FA:CE", "BA:BA", "C0:CA"]) + ":" +
+    pick(["BE:EF", "FE:ED", "C0:DE", "AB:BA", "0B:0E"]) + ":" + pick(["12", "AF", "69", "00", "FF"]);
+
+  let copias = 2;
+  let tempIp = 37;
+
+  const filas = () => [
+    ["Su IP", `192.168.${r(1, 9)}.${r(256, 999)}`],
+    ["IP gemela detectada en", pick(gemelas)],
+    ["Copias de su IP circulando", `${copias} (y subiendo)`],
+    ["Temperatura de la IP", `${tempIp}°C`],
+    ["Máscara de subred", pick(mascaras)],
+    ["Gateway", pick(gateways)],
+    ["Servidor DNS", pick(dns)],
+    ["Protocolo", pick(protocolos)],
+    ["Dirección MAC", hexBurlon()],
+    ["Paquetes perdidos", `${r(3, 99)} (buscar en Objetos Perdidos)`],
+    ["Latencia emocional", `${r(200, 9000)} ms`],
+    ["Nivel de duplicación", `${r(101, 480)}%`],
+    ["Riesgo", pick(riesgos)]
+  ];
+
+  const tabla = document.getElementById("datos");
+  function renderTabla() {
+    const datos = filas();
+    const cambiar = r(0, datos.length - 1);
+    tabla.innerHTML = datos.map(([k, v], i) =>
+      `<tr class="${i === cambiar ? "flash" : ""}"><td>${k}</td><td>${v}</td></tr>`
+    ).join("");
+  }
+
+  // ---------- Ticker ----------
+  const frasesTicker = [
+    `ÚLTIMO MOMENTO: ${quien} tiene la IP duplicada`,
+    "Expertos recomiendan no mirar la IP directamente",
+    "Se aconseja desenchufar el mouse y volver a enchufarlo con fe",
+    "La IP gemela pidió vacaciones",
+    "Sistemas confirma: \"no es nuestro problema\"",
+    "Se buscan voluntarios para compartir IP",
+    "El ERP se enteró y está nervioso"
+  ];
+  document.getElementById("ticker").textContent = frasesTicker.join("   ★★★   ");
+
+  // ---------- Log ----------
+  const logEl = document.getElementById("log");
+  const lineasLog = [
+    ["warn", "Escaneando puertos... encontrado puerto Madero"],
+    ["err", "ERROR 418: La IP es una tetera"],
+    ["", "Pingueando a la IP gemela... respondió \"¿quién es?\""],
+    ["warn", "Detectados 3 bits sueltos en el cable de red"],
+    ["err", "Firewall en llamas (metafóricamente, creo)"],
+    ["", "Intentando reiniciar internet... sin permisos"],
+    ["warn", "Cookies vencidas detectadas. Tirarlas."],
+    ["err", "La IP se duplicó otra vez mientras leía esto"],
+    ["", "Consultando al router. El router no quiere hablar."],
+    ["warn", "Exceso de megas en la papelera de reciclaje"],
+    ["err", "Kernel panic. Kernel calma. Kernel panic de nuevo."],
+    ["", "Descargando más RAM... 0%"],
+    ["warn", "La nube está nublada"],
+    ["err", `${nombre ? "El usuario " + nombre : "El usuario"} fue identificado como sospechoso de tener IP`]
+  ];
+  function log(texto, tipo = "") {
+    const hora = new Date().toLocaleTimeString("es-AR");
+    const div = document.createElement("div");
+    if (tipo) div.className = tipo;
+    div.textContent = `[${hora}] ${texto}`;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+    if (logEl.children.length > 120) logEl.firstChild.remove();
+  }
+
+  // ---------- Sirena (WebAudio, se activa con clic) ----------
+  let audioCtx = null, sonidoOn = false, sirenaTimer = null;
+  function beep(freq = 880, dur = 0.18) {
+    if (!sonidoOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "square";
+    o.frequency.value = freq;
+    g.gain.value = 0.05;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+  const btnSonido = document.getElementById("sonido");
+  btnSonido.addEventListener("click", () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sonidoOn = !sonidoOn;
+    btnSonido.textContent = sonidoOn ? "🔊 Apagar sirena" : "🔇 Activar sirena";
+    clearInterval(sirenaTimer);
+    if (sonidoOn) {
+      let alto = true;
+      sirenaTimer = setInterval(() => { beep(alto ? 960 : 640, 0.3); alto = !alto; }, 350);
+    }
+  });
+
+  // ---------- Popups ----------
+  const textosPopup = [
+    "Su IP fue vista en otra PC comiendo una medialuna.",
+    "Se recomienda cambiar de IP como quien cambia de medias.",
+    "¿Está seguro de que esta es su IP? Piénselo.",
+    "La IP gemela le manda saludos.",
+    "Tiene 1 (un) nuevo paquete perdido.",
+    "No cierre esta ventana. (Ya fue, ciérrela.)",
+    "Detectamos que usted está leyendo esto."
+  ];
+  const MAX_POPUPS = 3;
+  let popupsAbiertos = 0;
+  let ultimo = null;
+
+  // El primero cae en una zona al azar; los siguientes se amontonan encima,
+  // un poco corridos, así se superponen sin desparramarse por toda la pantalla.
+  function posicion(ancho) {
+    const alto = 150, vw = window.innerWidth, vh = window.innerHeight;
+    let x, y;
+    if (ultimo) {
+      x = ultimo.x + r(25, 60) * (Math.random() < 0.5 ? -1 : 1);
+      y = ultimo.y + r(-45, 45);
+    } else {
+      x = Math.random() < 0.5 ? r(10, vw * 0.3) : r(vw * 0.5, vw - ancho - 10);
+      y = r(vh * 0.25, vh - alto - 10);
+    }
+    x = Math.min(Math.max(5, x), vw - ancho - 5);
+    y = Math.min(Math.max(5, y), vh - alto - 5);
+    ultimo = { x, y };
+    return ultimo;
+  }
+
+  function popup(texto = pick(textosPopup)) {
+    if (popupsAbiertos >= MAX_POPUPS) return;
+    popupsAbiertos++;
+    const p = document.createElement("div");
+    p.className = "win popup";
+    p.setAttribute("role", "alertdialog");
+    p.innerHTML = `
+      <div class="titlebar"><span>Advertencia</span><button class="x" aria-label="Cerrar">✕</button></div>
+      <div class="cuerpo"><div class="icono" aria-hidden="true"></div><div></div></div>
+      <div class="acciones"><button class="b98">Aceptar</button></div>`;
+    p.querySelector(".cuerpo > div:last-child").textContent = texto;
+    document.body.appendChild(p);
+    const { x, y } = posicion(p.offsetWidth);
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    p.style.rotate = r(-4, 4) + "deg";
+    const cerrar = () => {
+      p.remove();
+      popupsAbiertos--;
+      if (popupsAbiertos === 0) ultimo = null;
+      beep(440, 0.1);
+      if (Math.random() < 0.2) setTimeout(popup, 1500);
+    };
+    p.querySelectorAll("button").forEach(b => b.addEventListener("click", cerrar));
+    beep(1200, 0.08);
+  }
+
+  // ---------- Botón Ignorar que se escapa ----------
+  const ignorar = document.getElementById("ignorar");
+  let escapes = 0;
+  const escapar = e => {
+    if (escapes++ > 12) { ignorar.style.transform = ""; return; }
+    if (e) e.preventDefault();
+    ignorar.style.transform = `translate(${r(-120, 120)}px, ${r(-30, 30)}px)`;
+    log("El botón Ignorar se negó a ser presionado", "warn");
+  };
+  ignorar.addEventListener("mouseenter", escapar);
+  ignorar.addEventListener("touchstart", escapar, { passive: false });
+  ignorar.addEventListener("click", () => {
+    log("No se puede ignorar una IP duplicada. Se duplicó de nuevo.", "err");
+    copias *= 2;
+    renderTabla();
+    popup("Ignorar el problema duplicó el problema.");
+  });
+
+  // ---------- Llamar a Sistemas ----------
+  const respuestasSoporte = [
+    "Sistemas está almorzando. Tiempo estimado: ∞",
+    "¿Probaste apagar y prender? Hacelo 14 veces.",
+    "Su llamada es importante. Usted está en la posición 9.473 de la fila.",
+    "Sistemas dice que es un tema de Tesorería.",
+    "El técnico está desduplicando su propia IP. Espere."
+  ];
+  document.getElementById("soporte").addEventListener("click", () => {
+    const resp = pick(respuestasSoporte);
+    log(`Sistemas: ${resp}`, "warn");
+    popup(resp);
+  });
+
+  // ---------- Desduplicar (con final) ----------
+  const btn = document.getElementById("desduplicar");
+  const barra = document.getElementById("barra");
+  const prog = document.getElementById("progreso");
+  const estado = document.getElementById("estado");
+  let intentos = 0;
+  const fallas = [
+    "La IP se resistió. Intente con más fuerza.",
+    "Error: hay una tercera IP ahora. Mala suerte."
+  ];
+  const pasos = [
+    "Separando la IP de su gemela...",
+    "Lijando bits sobrantes...",
+    "Pidiendo permiso al ERP...",
+    "Contando los ceros a mano...",
+    "Soplando el cable de red...",
+    "Convenciendo a la IP de que es única y especial..."
+  ];
+  btn.addEventListener("click", () => {
+    intentos++;
+    btn.disabled = true;
+    barra.style.visibility = "visible";
+    let pct = 0;
+    const t = setInterval(() => {
+      pct += r(2, 9);
+      if (pct > 99) pct = 99;
+      prog.style.width = pct + "%";
+      estado.textContent = `${pick(pasos)} ${pct}%`;
+      if (pct === 99) {
+        clearInterval(t);
+        setTimeout(() => {
+          if (intentos >= 3) return final();
+          const msg = fallas[intentos - 1];
+          estado.textContent = msg;
+          log(msg, "err");
+          copias += r(1, 3);
+          tempIp += r(10, 25);
+          renderTabla();
+          popup(msg);
+          btn.disabled = false;
+          btn.textContent = intentos === 1 ? "Desduplicar IP (más fuerte)" : "Desduplicar IP (ÚLTIMO)";
+        }, 1400);
+      }
+    }, 180);
+  });
+
+  function final() {
+    estado.textContent = "Solución encontrada.";
+    document.getElementById("textoFinal").textContent =
+      `Para desduplicar la IP, ${quien} debe traer facturas para toda la oficina. Es el único protocolo conocido que funciona.`;
+    document.getElementById("revelacion").style.display = "flex";
+    document.querySelectorAll(".popup").forEach(p => p.remove());
+    clearInterval(sirenaTimer);
+  }
+
+  // El ✕ de la ventana principal tampoco ayuda
+  document.getElementById("cerrarPrincipal").addEventListener("click", () => {
+    log("Intento de cierre detectado. Denegado.", "err");
+    popup("No puede cerrar esta ventana porque está duplicada.");
+  });
+
+  // ---------- Arranque ----------
+  renderTabla();
+  log("Iniciando diagnóstico de red...");
+  setTimeout(() => log(`¡IP DUPLICADA DETECTADA EN EL EQUIPO DE ${quien.toUpperCase()}!`, "err"), 700);
+
+  setInterval(() => { const [tipo, txt] = pick(lineasLog); log(txt, tipo); }, 1800);
+  setInterval(() => { tempIp += r(-2, 4); if (Math.random() < 0.3) copias++; renderTabla(); }, 1500);
+  setTimeout(popup, 6000);
+  setTimeout(popup, 7200);
+  setInterval(() => { if (Math.random() < 0.5) popup(); }, 15000);
+})();
+</script>
+</body>
+</html>
